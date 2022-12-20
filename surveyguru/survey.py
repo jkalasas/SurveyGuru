@@ -13,8 +13,8 @@ __all__ = (
 
 class EffectType(IntEnum):
     NONE = 0
-    POSITIVE = 1
-    NEGATIVE = 2
+    DIRECT = 1
+    INVERSE = 2
 
 
 class Connection:
