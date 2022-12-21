@@ -1,7 +1,8 @@
 from __future__ import annotations
 from enum import IntEnum
+from functools import cmp_to_key
 from math import ceil, floor
-from typing import Dict, List, Union, Iterable
+from typing import Dict, List, Union
 
 __all__ = (
     "Survey",
@@ -16,6 +17,13 @@ class EffectType(IntEnum):
     NONE = 0
     DIRECT = 1
     INVERSE = 2
+
+
+class QuestionPriority(IntEnum):
+    LOW = 0
+    NORMAL = 1
+    MEDIUM = 2
+    HIGH = 3
 
 
 class Connection:
@@ -38,10 +46,17 @@ class Option:
 
 
 class Question:
-    def __init__(self, id: int, qs: str, opts: List[Option]):
+    def __init__(
+        self,
+        id: int,
+        qs: str,
+        opts: List[Option],
+        priority: QuestionPriority = QuestionPriority.NORMAL,
+    ):
         self.id = id
         self.question = qs
         self.options = opts
+        self.prority = priority
         self.connection = {}
 
         self._probability_left = 100
@@ -165,9 +180,11 @@ class Survey:
         frm_qs.add_connection(to, con)
         to_qs.add_connection(frm, con)
 
-    def sort_question_by_deg(self, reverse: bool = False) -> List[Question]:
+    def sort_questions(self, reverse: bool = False) -> List[Question]:
         return sorted(
-            self.questions.values(), key=lambda qs: len(qs.connection), reverse=reverse
+            self.questions.values(),
+            key=lambda qs: (qs.prority, len(qs.connection)),
+            reverse=reverse,
         )
 
     @staticmethod
@@ -191,6 +208,7 @@ class Survey:
                             )
                             for opt in qs_data["options"]
                         ],
+                        priority=qs_data.get("priority", 1),
                     )
                     survey.add_question(qs)
             elif key == "connections":

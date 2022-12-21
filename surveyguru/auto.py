@@ -42,7 +42,7 @@ class Guru:
 
     def smart_answer(self, population: int) -> List[Form]:
         forms = []
-        sorted_qs = self.survey.sort_question_by_deg(reverse=True)
+        sorted_qs = self.survey.sort_questions(reverse=True)
         for _ in range(population):
             form = Form(self.survey)
             for q in sorted_qs:
