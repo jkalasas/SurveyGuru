@@ -7,6 +7,7 @@ SurveyGuru is an application for survey data generation.
 
 from argparse import Namespace
 from survey import Survey
+from auto import Guru, forms_to_dict
 
 
 def get_data(filename: str) -> dict:
@@ -22,6 +23,19 @@ def get_data(filename: str) -> dict:
             raise ValueError(f"Unknown file type: {filename}")
 
 
+def export_data(filename: str, data: dict) -> None:
+    from csv import writer
+
+    if not data:
+        raise ValueError("Data is empty!")
+
+    with open(filename, "w") as f:
+        writer = writer(f)
+        writer.writerow([f"Question {q}" for q in tuple(data.values())[0].keys()])
+        for row in data.values():
+            writer.writerow([ans for ans in row.values()])
+
+
 def generate_filename(ext: str) -> str:
     import datetime
 
@@ -33,12 +47,13 @@ def get_args() -> Namespace:
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument("input_file", type=str, help="Source of data")
+    parser.add_argument("-i", "--input", type=str, help="Source of data")
+    parser.add_argument("-p", "--population", type=int, help="Population of the survey")
     parser.add_argument(
         "-o",
         "--output",
         type=str,
-        default=lambda: generate_filename("csv"),
+        default=generate_filename("csv"),
         help="Destination of data",
     )
 
@@ -47,7 +62,10 @@ def get_args() -> Namespace:
 
 def main():
     args = get_args()
-    survey = Survey.from_dict(get_data(args.input_file))
+    survey = Survey.from_dict(get_data(args.input))
+    guru = Guru(survey)
+    data = forms_to_dict(guru.smart_answer(args.population))
+    export_data(args.output, data)
 
 
 if __name__ == "__main__":

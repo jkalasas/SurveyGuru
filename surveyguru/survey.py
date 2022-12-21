@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Dict, List, Union
 from enum import IntEnum
+from math import ceil, floor
+from typing import Dict, List, Union, Iterable
 
 __all__ = (
     "Survey",
@@ -24,7 +25,7 @@ class Connection:
 
 
 class Option:
-    def __init__(self, name: str, value: str):
+    def __init__(self, name: str, value):
         self.name = name
         self.value = value
 
@@ -53,6 +54,39 @@ class Question:
 
     def add_option(self, option: Option):
         self.options.append(option)
+
+    def sorted_options(self, reverse: bool = False):
+        return sorted(self.options, key=lambda a: a.value, reverse=reverse)
+
+    def get_opt_values(self, sort=False, reverse=False) -> List:
+        return [
+            opt.value
+            for opt in (self.sorted_options(reverse=reverse) if sort else self.options)
+        ]
+
+    def get_max_opt(self) -> Option:
+        return max(self.options, key=lambda a: a.value)
+
+    def num_opts(self) -> int:
+        return len(self.options)
+
+    def opt_probabilities(self) -> Dict[Option, int]:
+        sorted_opt = self.sorted_options()
+        opt_probs = {}
+        mid = len(sorted_opt) / 2
+        if mid % 1 != 0:
+            opt_probs[sorted_opt[floor(mid)]] = 0
+
+        # left side
+        left = sorted_opt[0 : floor(mid)]
+        for i, opt in enumerate(left):
+            opt_probs[opt] = -100 + 100 * i / len(left)
+
+        # right side
+        right = sorted_opt[ceil(mid) : :]
+        for i, opt in enumerate(right):
+            opt_probs[opt] = 100 - 100 * (len(right) - i - 1) / len(right)
+        return opt_probs
 
 
 class Survey:
@@ -84,8 +118,8 @@ class Survey:
         self.num_questions += 1
         self.questions[qs.id] = qs
 
-    def get_question(self, id: int) -> Union(int, None):
-        return self.qs.get(id)
+    def get_question(self, id: int) -> Union(Question, None):
+        return self.questions.get(id)
 
     def add_connection(self, frm: int, to: int, con: Connection):
         frm_qs = self.questions.get(frm, None)
@@ -98,6 +132,11 @@ class Survey:
 
         frm_qs.add_connection(to, con)
         to_qs.add_connection(frm, con)
+
+    def sort_question_by_deg(self, reverse: bool = False) -> List[Question]:
+        return sorted(
+            self.questions.values(), key=lambda qs: len(qs.connection), reverse=reverse
+        )
 
     @staticmethod
     def from_dict(data: dict) -> Survey:
