@@ -25,9 +25,10 @@ class Connection:
 
 
 class Option:
-    def __init__(self, name: str, value):
+    def __init__(self, name: str, value, probability: int = None):
         self.name = name
         self.value = value
+        self.probability = probability
 
     def __repr__(self) -> str:
         return f"{self.name} - ({self.value})"
@@ -43,17 +44,48 @@ class Question:
         self.options = opts
         self.connection = {}
 
+        self._probability_left = 100
+        self._unprioritized = len(opts)
+        for opt in opts:
+            if opt.probability is not None:
+                self.probability_left -= opt.probability
+                self._unprioritized -= 1
+
     def __repr__(self) -> str:
         return f"Question: {self.question}"
 
     def __str__(self) -> str:
         return f"Question: {self.question}"
 
+    @property
+    def probability_left(self) -> int:
+        return self._probability_left
+
+    @probability_left.setter
+    def probability_left(self, a: int):
+        if a < 0:
+            raise ValueError("Allocatable probability is below zero")
+        self._probability_left = a
+
+    @property
+    def num_unprioritized(self) -> int:
+        return self._unprioritized
+
+    @num_unprioritized.setter
+    def num_unprioritized(self, a: int):
+        if a < 0:
+            raise ValueError("Unprioritized options can't be less than zero")
+        self._unprioritized = a
+
     def add_connection(self, qs_id: int, con: Connection):
         self.connection[qs_id] = con
 
-    def add_option(self, option: Option):
-        self.options.append(option)
+    def add_option(self, opt: Option):
+        if opt.probability is not None:
+            self.probability_left -= opt.probability
+        else:
+            self.num_unprioritized += 1
+        self.options.append(opt)
 
     def sorted_options(self, reverse: bool = False):
         return sorted(self.options, key=lambda a: a.value, reverse=reverse)
@@ -152,7 +184,11 @@ class Survey:
                         qs_data["id"],
                         qs_data["question"],
                         [
-                            Option(opt["name"], opt["value"])
+                            Option(
+                                opt["name"],
+                                opt["value"],
+                                probability=opt.get("probability"),
+                            )
                             for opt in qs_data["options"]
                         ],
                     )

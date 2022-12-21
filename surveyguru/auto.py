@@ -68,10 +68,19 @@ def rand_decide(form: Form, qs_id: int) -> Option:
     total_effect = form.accumulate_effect(qs_id)
     min_r = min(0 + (total_effect if total_effect > 0 else 0), 100)
     max_r = max(100 + (total_effect if total_effect < 0 else 0), 0)
-    opts = form.survey.get_question(qs_id).sorted_options()
+    qs: Question = form.survey.get_question(qs_id)
+    opts = qs.sorted_options()
 
     ans_prob = random.randrange(min_r, max_r)
-    gap = 100 / len(opts)
-    for i, opt in enumerate(opts):
-        if gap * i <= ans_prob < gap * (i + 1):
+    dist = qs.probability_left / qs.num_unprioritized
+    start, end, no_unprio = 0, 0, 0
+    for opt in opts:
+        if opt.probability is None:
+            end = start + dist * (no_unprio + 1)
+            no_unprio += 1
+        else:
+            end = start + opt.probability
+
+        if start <= ans_prob < end:
             return opt
+        start = end
