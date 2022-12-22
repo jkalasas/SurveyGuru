@@ -169,8 +169,8 @@ class Survey:
         return self.questions.get(id)
 
     def add_connection(self, frm: int, to: int, con: Connection):
-        frm_qs = self.questions.get(frm, None)
-        to_qs = self.questions.get(to, None)
+        frm_qs = self.questions.get(frm)
+        to_qs = self.questions.get(to)
 
         if frm_qs is None:
             raise ValueError(f"Question {frm} not found")
