@@ -36,7 +36,7 @@ def export_data(filename: str, data: dict) -> None:
         writer = writer(f)
         writer.writerow([f"Question {q}" for q in tuple(data.values())[0].keys()])
         for row in data.values():
-            writer.writerow([ans for ans in row.values()])
+            writer.writerow(row.values())
 
 
 def generate_filename(ext: str) -> str:
