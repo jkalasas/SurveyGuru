@@ -21,12 +21,12 @@ class Form:
         if qs is None:
             raise ValueError(f"Question {qs_id} not found")
 
-        for qs_id, con in qs.connection.items():
-            ans = self.answers.get(qs_id, None)
+        for con_qs_id, con in qs.connection.items():
+            ans = self.answers.get(con_qs_id, None)
             if ans is None:
                 continue
             for opt, prob in (
-                self.survey.get_question(qs_id).opt_probabilities().items()
+                self.survey.get_question(con_qs_id).opt_probabilities().items()
             ):
                 if opt == ans:
                     total_effect += (con.weight * prob) * (
