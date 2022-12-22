@@ -140,12 +140,13 @@ class Survey:
         self,
         title: str = "",
         description: str = "",
-        qs: Dict[int, Question] = {},
+        qs: Dict[int, Question] = None,
         no_qs: int = 0,
     ):
+        if qs is None:
+            self.questions = {}
         self.title = title
         self.description = description
-        self.questions = qs
         self.num_questions = no_qs
 
     def __repr__(self) -> str:
