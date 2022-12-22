@@ -14,13 +14,16 @@ def get_data(filename: str) -> dict:
     import json
     import yaml
 
+    data = None
+
     with open(filename, "r") as f:
         if filename.endswith(".json"):
-            return json.load(f)
+            data = json.load(f)
         elif filename.endswith(".yaml") or filename.endswith(".yml"):
-            return yaml.safe_load(f)
-        else:
-            raise ValueError(f"Unknown file type: {filename}")
+            data = yaml.safe_load(f)
+    if data is None:
+        raise ValueError(f"Unknown file type: {filename}")
+    return data
 
 
 def export_data(filename: str, data: dict) -> None:
