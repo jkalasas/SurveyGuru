@@ -86,3 +86,4 @@ def rand_decide(form: Form, qs_id: int) -> Option:
         if start <= ans_prob < end:
             return opt
         start = end
+    return random.choice(opts)
