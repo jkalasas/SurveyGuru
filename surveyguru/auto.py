@@ -25,10 +25,14 @@ class Form:
             ans = self.answers.get(qs_id, None)
             if ans is None:
                 continue
-            for prob in self.survey.get_question(qs_id).opt_probabilities().values():
-                total_effect += (con.weight * prob) * (
-                    1 if con.effect == EffectType.DIRECT else -1
-                )
+            for opt, prob in (
+                self.survey.get_question(qs_id).opt_probabilities().items()
+            ):
+                if opt == ans:
+                    total_effect += (con.weight * prob) * (
+                        1 if con.effect == EffectType.DIRECT else -1
+                    )
+                    break
         return round(total_effect)
 
     def to_dict(self) -> dict:
