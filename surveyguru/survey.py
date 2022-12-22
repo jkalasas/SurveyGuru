@@ -190,31 +190,30 @@ class Survey:
     @staticmethod
     def from_dict(data: dict) -> Survey:
         survey = Survey()
-        for key, value in data.items():
-            if key == "title":
-                survey.title = value
-            elif key == "description":
-                survey.description = value
-            elif key == "questions":
-                for qs_data in value:
-                    qs = Question(
-                        qs_data["id"],
-                        qs_data["question"],
-                        [
-                            Option(
-                                opt["name"],
-                                opt["value"],
-                                probability=opt.get("probability"),
-                            )
-                            for opt in qs_data["options"]
-                        ],
-                        priority=qs_data.get("priority", 1),
+        title = data.get("title")
+        description = data.get("description")
+        if title is not None:
+            survey.title = title
+        if description is not None:
+            survey.description = description
+        for qs_data in data.get("questions", []):
+            qs = Question(
+                qs_data["id"],
+                qs_data["question"],
+                [
+                    Option(
+                        opt["name"],
+                        opt["value"],
+                        probability=opt.get("probability"),
                     )
-                    survey.add_question(qs)
-            elif key == "connections":
-                for con_data in value:
-                    con = Connection(con_data["weight"], con_data["effect"])
-                    survey.add_connection(
-                        con_data["affector"], con_data["affected"], con
-                    )
+                    for opt in qs_data["options"]
+                ],
+                priority=qs_data.get("priority", 1),
+            )
+            survey.add_question(qs)
+
+        for con_data in data.get("connections", []):
+            con = Connection(con_data["weight"], con_data["effect"])
+            survey.add_connection(con_data["affector"], con_data["affected"], con)
+
         return survey
