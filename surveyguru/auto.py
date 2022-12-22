@@ -77,14 +77,12 @@ def rand_decide(form: Form, qs_id: int) -> Option:
 
     ans_prob = random.randrange(min_r, max_r)
     dist = qs.probability_left / qs.num_unprioritized
-    start, end, no_unprio = 0, 0, 0
+    start, end = 0, 0
     for opt in opts:
         if opt.probability is None:
-            end = start + dist * (no_unprio + 1)
-            no_unprio += 1
+            end = start + dist
         else:
             end = start + opt.probability
-
         if start <= ans_prob < end:
             return opt
         start = end
