@@ -22,7 +22,7 @@ class Form:
             raise ValueError(f"Question {qs_id} not found")
 
         for con_qs_id, con in qs.connection.items():
-            ans = self.answers.get(con_qs_id, None)
+            ans = self.answers.get(con_qs_id)
             if ans is None:
                 continue
             for opt, prob in (
